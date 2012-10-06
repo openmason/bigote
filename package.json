@@ -2,7 +2,7 @@
   "name": "bigote",
   "description": "Logic less templating",
   "homepage": "https://github.com/openmason/bigote",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "author": "el aras <openmason@gmail.com>",
   "dependencies": {
   },
