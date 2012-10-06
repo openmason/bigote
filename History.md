@@ -1,5 +1,6 @@
-# release 0.2.0
+# release 0.2.1
  * added loop construct
+ * loops can have array or object context
 # release 0.1.1
  * separated parser and runtime
  * runtime is rudimentary ast execution unit

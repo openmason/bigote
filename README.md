@@ -10,3 +10,4 @@ Logic-less templating
   * string example - 30k /ms
   * replace example - 4.5k /ms
   * array example - 2.2k /ms
+  * object example - 3.8k /ms
