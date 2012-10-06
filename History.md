@@ -1,2 +1,3 @@
-# release 0.0.1
+# release 0.0.3
+ * first peg grammer with basic parsing of template
  * initial repository creation
