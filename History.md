@@ -1,3 +1,5 @@
+# release 0.2.0
+ * added loop construct
 # release 0.1.1
  * separated parser and runtime
  * runtime is rudimentary ast execution unit

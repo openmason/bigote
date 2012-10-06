@@ -1,11 +1,10 @@
-var PEG = require("pegjs");
 var bigote = require('..');
 
 var source="Hello World!";
 var context = {};
 
 var tmpl = bigote.parse(source);
-//console.log(tmpl);
+console.log(tmpl);
 var n=100;
 var total=0;
 // lets benchmark 10 times with 5000 loops
