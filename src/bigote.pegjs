@@ -2,17 +2,11 @@
  * logic less template engine
  */
 
-/*
 start
-  = comments partials delimiters invertedSections sections variables
-
-*/
-
-start
-  = body
+  = b:body                                { return(b); }
 
 body
-  = p:(x:part {return x.join('');})*      { return(p.join('')); }
+  = part* 
 
 part
   = tag_start v:variable tag_end          { return v; }
@@ -20,7 +14,7 @@ part
   / buffer EOF
 
 buffer
-  = b:(!tag_start c:. { return c; })+     { return b.join(''); }
+  = b:(!tag_start c:. { return c; })+     { return ['buf',b.join('')]; }
 
 tag_start
   = "{{"
@@ -29,7 +23,7 @@ tag_end
   = "}}"
 
 variable
-  = v:(!tag_end c:. { return c; })+       { return context[v.join('')]; }
+  = v:(!tag_end c:. { return c; })+       { return ['tag', v.join('')]; }
 
 EOF
   = !.
