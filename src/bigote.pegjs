@@ -6,7 +6,7 @@ start
   = b:body                                { return(b); }
 
 body
-  = part* 
+  = part*
 
 part
   = tag_start v:variable tag_end          { return v; }
