@@ -11,3 +11,5 @@ Logic-less templating
   * replace example - 4.5k /ms
   * array example - 2.2k /ms
   * object example - 3.8k /ms
+  * partial example - 1k /ms
+  * recursion example - 1.7k /ms

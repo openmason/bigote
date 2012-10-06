@@ -1,3 +1,5 @@
+# release 0.3.0
+ * partials support added
 # release 0.2.1
  * added loop construct
  * loops can have array or object context

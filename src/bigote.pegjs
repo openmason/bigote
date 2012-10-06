@@ -14,6 +14,7 @@ part
 
 tag
   = section
+  / partial
   / variable
 
 variable
@@ -30,6 +31,9 @@ section
       //console.log(b);
       return ['loop', v, b];
     }
+
+partial
+  = tag_start ">" v:varname tag_end       { return ['inc', v]; }
 
 buffer
   = b:(!tag_start c:. { return c; })+     { return ['buf',b.join('')]; }
