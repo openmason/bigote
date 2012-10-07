@@ -1,4 +1,5 @@
-# release 0.3.0
+# release 0.3.1
+ * added benchmarks directory (copied from dust.js)
  * partials support added
 # release 0.2.1
  * added loop construct

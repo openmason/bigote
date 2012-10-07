@@ -18,5 +18,5 @@ for(var b=0;b<n;b++) {
   total += (end-start);
   //console.log("5000 ops in " + (end-start) + " ms");
 }
-console.log("Average ops/msec " + ((n*5000)/total));
+console.log("Average ops/msec " + ((n*5000)/total) + ' / ops: ' + (n*5000) + ' time(ms):'+total);
 console.log(result);

@@ -1,0 +1,82 @@
+(function(exports){
+
+var benches = {
+
+  string: {
+    source:  "Hello World!",
+    context: {}
+  },
+
+  replace: {
+    source:  "Hello {{name}}! You have {{count}} new messages.",
+    context: { name: "Mick", count: 30 }
+  },
+
+  array: {
+    source:  "{{#names}}{{name}}{{/names}}",
+    context: { names: [{name: "Moe"}, {name: "Larry"}, {name: "Curly"}, {name: "Shemp"}] }
+  },
+
+  object: {
+    source:  "{{#person}}{{name}}{{age}}{{/person}}",
+    context: { person: { name: "Larry", age: 45 } }
+  },
+
+  partial: {
+    source:   "{{#peeps}}{{>replace}}{{/peeps}}",
+    context:  { peeps: [{name: "Moe", count: 15}, {name: "Larry", count: 5}, {name: "Curly", count: 1}] },
+    partials: { replace: "Hello {{name}}! You have {{count}} new messages." }
+  },
+
+  recursion: {
+    source:   "{{name}}{{#kids}}{{>recursion}}{{/kids}}",
+    context:  {
+                name: '1',
+                kids: [
+                  {
+                    name: '1.1',
+                    kids: [
+                      {name: '1.1.1', kids: []}
+                    ]
+                  }
+                ]
+              },
+    partials: { recursion: "{{name}}{{#kids}}{{>recursion}}{{/kids}}" }
+  },
+
+  filter: {
+    source:   "{{#filter}}foo {{bar}}{{/filter}}",
+    context:  {
+                filter: function() {
+                  return function(text, render) {
+                    return render(text).toUpperCase();
+                  }
+                },
+                bar: "bar"
+              }
+  },
+
+  complex: {
+    source:  "<h1>{{header}}</h1>",
+    context: {
+               header: "hello"
+             }
+  }
+}
+
+exports.bigoteBench = function(suite, name, id) {
+  var bench = benches[name],
+      src = bench.source,
+      ctx = bench.context,
+      partials = bench.partials;
+
+  var tmpl = bigote.load(src, partials);
+  suite.bench(id || name, function(next) {
+    bigote.evaluate(tmpl, ctx);
+    next();
+  });
+}
+
+exports.bigoteBench.benches = benches;
+
+})(typeof exports !== "undefined" ? exports : window);
