@@ -1,4 +1,5 @@
-# release 0.3.1
+# release 0.3.2
+ * offset added to AST
  * added benchmarks directory (copied from dust.js)
  * partials support added
 # release 0.2.1
