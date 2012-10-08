@@ -4,7 +4,7 @@ var source="{{#names}}{{name}}{{/names}}";
 var context= { names: [{name: "Moe"}, {name: "Larry"}, {name: "Curly"}, {name: "Shemp"}] };
 
 var tmpl = bigote.parse(source);
-console.log(tmpl);
+console.log(JSON.stringify(tmpl));
 var n=100;
 var total=0;
 var loops=5000;

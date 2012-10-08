@@ -5,7 +5,7 @@ var context={ peeps: [{name: "Moe", count: 15}, {name: "Larry", count: 5}, {name
 var partials={ replace: "Hello {{name}}! You have {{count}} new messages." };
 
 var tmpl = bigote.load(source, partials);
-console.log(tmpl);
+console.log(JSON.stringify(tmpl));
 var total=0;
 var n=100;
 var loops=5000;

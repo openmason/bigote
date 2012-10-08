@@ -2,6 +2,13 @@
  * logic less template engine
  */
 
+{
+  var IDENTIFIER = 'var';
+  var BUFFER     = 'buf';
+  var INCLUDE    = 'inc';
+  var BLOCK      = 'blk';
+}
+
 start
   = b:body                                { return(b); }
 
@@ -29,14 +36,14 @@ section
       //console.log(v);
       //console.log(x);
       //console.log(b);
-      return ['blk', v, b];
+      return [BLOCK, offset, v, b];
     }
 
 partial
-  = tag_start ">" v:varname tag_end       { return ['inc', v]; }
+  = tag_start ">" v:varname tag_end       { return [INCLUDE, offset, v]; }
 
 buffer
-  = b:(!tag_start c:. { return c; })+     { return ['buf',b.join('')]; }
+  = b:(!tag_start c:. { return c; })+     { return [BUFFER, offset, b.join('')]; }
 
 section_start
   = tag_start "#"
@@ -51,7 +58,7 @@ tag_end
   = "}}"
 
 varname
-  = h:[a-zA-Z_$] t:[0-9a-zA-Z_$]*         { return ['var', h + t.join('')]; }
+  = h:[a-zA-Z_$] t:[0-9a-zA-Z_$]*         { return [IDENTIFIER, offset, h + t.join('')]; }
 
 EOF
   = !.

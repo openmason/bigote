@@ -673,7 +673,7 @@ require.define("/lib/parser.js",function(require,module,exports,__dirname,__file
               //console.log(v);
               //console.log(x);
               //console.log(b);
-              return ['blk', v, b];
+              return [BLOCK, offset, v, b];
             })(pos0, result0[1], result0[3], result0[5]);
         }
         if (result0 === null) {
@@ -722,7 +722,7 @@ require.define("/lib/parser.js",function(require,module,exports,__dirname,__file
           pos = pos1;
         }
         if (result0 !== null) {
-          result0 = (function(offset, v) { return ['inc', v]; })(pos0, result0[2]);
+          result0 = (function(offset, v) { return [INCLUDE, offset, v]; })(pos0, result0[2]);
         }
         if (result0 === null) {
           pos = pos0;
@@ -820,7 +820,7 @@ require.define("/lib/parser.js",function(require,module,exports,__dirname,__file
           result0 = null;
         }
         if (result0 !== null) {
-          result0 = (function(offset, b) { return ['buf',b.join('')]; })(pos0, result0);
+          result0 = (function(offset, b) { return [BUFFER, offset, b.join('')]; })(pos0, result0);
         }
         if (result0 === null) {
           pos = pos0;
@@ -965,7 +965,7 @@ require.define("/lib/parser.js",function(require,module,exports,__dirname,__file
           pos = pos1;
         }
         if (result0 !== null) {
-          result0 = (function(offset, h, t) { return ['var', h + t.join('')]; })(pos0, result0[0], result0[1]);
+          result0 = (function(offset, h, t) { return [IDENTIFIER, offset, h + t.join('')]; })(pos0, result0[0], result0[1]);
         }
         if (result0 === null) {
           pos = pos0;
@@ -1043,6 +1043,12 @@ require.define("/lib/parser.js",function(require,module,exports,__dirname,__file
         
         return { line: line, column: column };
       }
+      
+      
+        var IDENTIFIER = 'var';
+        var BUFFER     = 'buf';
+        var INCLUDE    = 'inc';
+        var BLOCK      = 'blk';
       
       
       var result = parseFunctions[startRule]();
@@ -1183,33 +1189,42 @@ require.define("/lib/runtime.js",function(require,module,exports,__dirname,__fil
     if(typeof(context)=='function') {
       //console.log(originalText(ast));
     }
-    var astEntries=ast.length;
-    var i;
-    for(i=0;astEntries--;i++) {
-      var node = ast[i];
-      if(node && node.length>=2) {
-        if(node[0] == 'buf') {
-          buf += node[1];
-        } else if(node[0] == 'var') {
-          buf += context[node[1]];
-        } else if(node[0] == 'inc') {
-          // included partial to be loaded
-          // [ 'inc', [ 'var', 'replace' ] ]
-          // node[1][1] is the partial name
-          buf += evalContext(_templates[node[1][1]], context);
-        } else if(node[0] == 'blk') {
-          // node[2] is the ast
-          // node[1][0] should be 'var'
-          // node[1][1] should be the context name
-          var loopContext = context[node[1][1]];
-          loopContext = loopContext && loopContext instanceof Array?loopContext:[loopContext];
-          for(var cidx=0;cidx<loopContext.length;cidx++) {
-            var ctxt = loopContext[cidx];
-            //console.log(node[2]);
-            //console.log(ctxt);
-            buf += evalContext(node[2], ctxt);
-          }
-        }
+    var i=0;
+    var maxNodes=ast.length;
+    while(maxNodes--) {
+      var node = ast[i++];
+      if(node && node.length>=3) {
+        //type = node[0];
+        //offset = node[1];
+        //value = node[2];
+        //console.log(type, offset, value);
+        if(node[0]=='buf') {
+          // [ 'buf', 14, '! You have ' ]
+          buf += node[2];
+        } else if(node[0]=='var') {
+          // [ 'var', 8, 'name' ]
+          buf += context[node[2]];
+        } else if(node[0]=='inc') {
+           // included partial to be loaded
+           // [ 'inc', 23, [ 'var', 23, 'replace' ] ]
+           // node[2][2] is the partial name
+           buf += evalContext(_templates[node[2][2]], context);
+         } else if(node[0]=='blk') {
+           // [ 'blk', 0, [Object], [Object] ] 
+           // node[2] is the ast
+           // node[2][0] should be 'var'
+           // node[2][2] should be the context name
+           var loopContext = context[node[2][2]];
+           loopContext = loopContext && loopContext instanceof Array?loopContext:[loopContext];
+           for(var cidx=0;cidx<loopContext.length;cidx++) {
+             var ctxt = loopContext[cidx];
+             //console.log(node[2]);
+             //console.log(ctxt);
+             buf += evalContext(node[3], ctxt);
+           }
+         } else {
+           console.log('*** unknown tag **** ' + node[0]);
+         }
       }
     }
     return buf;
@@ -1220,7 +1235,8 @@ require.define("/lib/runtime.js",function(require,module,exports,__dirname,__fil
 
 });
 
-require.define("/entry.js",function(require,module,exports,__dirname,__filename,process,global){bigote = require('./index');
+require.define("/entry.js",function(require,module,exports,__dirname,__filename,process,global){bigote = require('..');
+
 
 });
 require("/entry.js");
