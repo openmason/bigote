@@ -6,8 +6,10 @@ Support for compiled mushtache specs that are highly performant. Please check th
 ## Features
 Full support for mustache templates. Please refer to examples directory for samples from mustache man pages.
 
+   * http://mustache.github.com/mustache.5.html
+
 ## Performance
-Have copied the benchmark code from dust.js and have added bigote for comparison. 
+Please refer to benchmark directory (this directory have the benchmark files from dust.js updated with bigote for comparison)
 
 ## Notes
   * Inspired by mushtache, dust.js

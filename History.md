@@ -1,4 +1,5 @@
-# release 0.3.3
+# release 0.3.4
+ * added comment, hat to grammar
  * added examples from mustache man page
  * offset added to AST
  * added benchmarks directory (copied from dust.js)

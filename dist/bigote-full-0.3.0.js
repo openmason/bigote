@@ -471,10 +471,15 @@ require.define("/lib/parser.js",function(require,module,exports,__dirname,__file
         "tag": parse_tag,
         "variable": parse_variable,
         "section": parse_section,
+        "conditional": parse_conditional,
         "partial": parse_partial,
+        "comment": parse_comment,
         "buffer": parse_buffer,
+        "hat_start": parse_hat_start,
         "section_start": parse_section_start,
         "section_end": parse_section_end,
+        "esc_tag_start": parse_esc_tag_start,
+        "esc_tag_end": parse_esc_tag_end,
         "tag_start": parse_tag_start,
         "tag_end": parse_tag_end,
         "varname": parse_varname,
@@ -585,7 +590,7 @@ require.define("/lib/parser.js",function(require,module,exports,__dirname,__file
       }
       
       function parse_variable() {
-        var result0, result1, result2;
+        var result0, result1, result2, result3;
         var pos0, pos1;
         
         pos0 = pos;
@@ -610,10 +615,85 @@ require.define("/lib/parser.js",function(require,module,exports,__dirname,__file
           pos = pos1;
         }
         if (result0 !== null) {
-          result0 = (function(offset, v) { return v; })(pos0, result0[1]);
+          result0 = (function(offset, v) { return [IDENTIFIER, offset, v]; })(pos0, result0[1]);
         }
         if (result0 === null) {
           pos = pos0;
+        }
+        if (result0 === null) {
+          pos0 = pos;
+          pos1 = pos;
+          result0 = parse_esc_tag_start();
+          if (result0 !== null) {
+            result1 = parse_varname();
+            if (result1 !== null) {
+              result2 = parse_esc_tag_end();
+              if (result2 !== null) {
+                result0 = [result0, result1, result2];
+              } else {
+                result0 = null;
+                pos = pos1;
+              }
+            } else {
+              result0 = null;
+              pos = pos1;
+            }
+          } else {
+            result0 = null;
+            pos = pos1;
+          }
+          if (result0 !== null) {
+            result0 = (function(offset, v1) { return [NOESC, offset, v1]; })(pos0, result0[1]);
+          }
+          if (result0 === null) {
+            pos = pos0;
+          }
+          if (result0 === null) {
+            pos0 = pos;
+            pos1 = pos;
+            result0 = parse_tag_start();
+            if (result0 !== null) {
+              if (input.charCodeAt(pos) === 38) {
+                result1 = "&";
+                pos++;
+              } else {
+                result1 = null;
+                if (reportFailures === 0) {
+                  matchFailed("\"&\"");
+                }
+              }
+              if (result1 !== null) {
+                result2 = parse_varname();
+                if (result2 !== null) {
+                  result3 = parse_tag_end();
+                  if (result3 !== null) {
+                    result0 = [result0, result1, result2, result3];
+                  } else {
+                    result0 = null;
+                    pos = pos1;
+                  }
+                } else {
+                  result0 = null;
+                  pos = pos1;
+                }
+              } else {
+                result0 = null;
+                pos = pos1;
+              }
+            } else {
+              result0 = null;
+              pos = pos1;
+            }
+            if (result0 !== null) {
+              result0 = (function(offset, v2) { return [NOESC, offset, v2]; })(pos0, result0[2]);
+            }
+            if (result0 === null) {
+              pos = pos0;
+            }
+            if (result0 === null) {
+              result0 = parse_comment();
+            }
+          }
         }
         return result0;
       }
@@ -624,7 +704,7 @@ require.define("/lib/parser.js",function(require,module,exports,__dirname,__file
         
         pos0 = pos;
         pos1 = pos;
-        result0 = parse_section_start();
+        result0 = parse_conditional();
         if (result0 !== null) {
           result1 = parse_varname();
           if (result1 !== null) {
@@ -668,16 +748,41 @@ require.define("/lib/parser.js",function(require,module,exports,__dirname,__file
           pos = pos1;
         }
         if (result0 !== null) {
-          result0 = (function(offset, v, b, x) {
+          result0 = (function(offset, t, v, b, x) {
               // v & v1 has to be the same
-              //console.log(v);
-              //console.log(x);
-              //console.log(b);
-              return [BLOCK, offset, v, b];
-            })(pos0, result0[1], result0[3], result0[5]);
+              if(v!=x) {
+                console.log('section start ('+v+') and end ('+x+') does not match! at:'+offset);
+              }
+              return [t, offset, v, b];
+            })(pos0, result0[0], result0[1], result0[3], result0[5]);
         }
         if (result0 === null) {
           pos = pos0;
+        }
+        return result0;
+      }
+      
+      function parse_conditional() {
+        var result0;
+        var pos0;
+        
+        pos0 = pos;
+        result0 = parse_section_start();
+        if (result0 !== null) {
+          result0 = (function(offset) { return BLOCK; })(pos0);
+        }
+        if (result0 === null) {
+          pos = pos0;
+        }
+        if (result0 === null) {
+          pos0 = pos;
+          result0 = parse_hat_start();
+          if (result0 !== null) {
+            result0 = (function(offset) { return NOT_BLOCK; })(pos0);
+          }
+          if (result0 === null) {
+            pos = pos0;
+          }
         }
         return result0;
       }
@@ -723,6 +828,139 @@ require.define("/lib/parser.js",function(require,module,exports,__dirname,__file
         }
         if (result0 !== null) {
           result0 = (function(offset, v) { return [INCLUDE, offset, v]; })(pos0, result0[2]);
+        }
+        if (result0 === null) {
+          pos = pos0;
+        }
+        return result0;
+      }
+      
+      function parse_comment() {
+        var result0, result1, result2, result3, result4;
+        var pos0, pos1, pos2, pos3, pos4;
+        
+        pos0 = pos;
+        pos1 = pos;
+        result0 = parse_tag_start();
+        if (result0 !== null) {
+          if (input.charCodeAt(pos) === 33) {
+            result1 = "!";
+            pos++;
+          } else {
+            result1 = null;
+            if (reportFailures === 0) {
+              matchFailed("\"!\"");
+            }
+          }
+          if (result1 !== null) {
+            pos2 = pos;
+            pos3 = pos;
+            pos4 = pos;
+            reportFailures++;
+            result3 = parse_tag_end();
+            reportFailures--;
+            if (result3 === null) {
+              result3 = "";
+            } else {
+              result3 = null;
+              pos = pos4;
+            }
+            if (result3 !== null) {
+              if (input.length > pos) {
+                result4 = input.charAt(pos);
+                pos++;
+              } else {
+                result4 = null;
+                if (reportFailures === 0) {
+                  matchFailed("any character");
+                }
+              }
+              if (result4 !== null) {
+                result3 = [result3, result4];
+              } else {
+                result3 = null;
+                pos = pos3;
+              }
+            } else {
+              result3 = null;
+              pos = pos3;
+            }
+            if (result3 !== null) {
+              result3 = (function(offset, c) { return c;})(pos2, result3[1]);
+            }
+            if (result3 === null) {
+              pos = pos2;
+            }
+            if (result3 !== null) {
+              result2 = [];
+              while (result3 !== null) {
+                result2.push(result3);
+                pos2 = pos;
+                pos3 = pos;
+                pos4 = pos;
+                reportFailures++;
+                result3 = parse_tag_end();
+                reportFailures--;
+                if (result3 === null) {
+                  result3 = "";
+                } else {
+                  result3 = null;
+                  pos = pos4;
+                }
+                if (result3 !== null) {
+                  if (input.length > pos) {
+                    result4 = input.charAt(pos);
+                    pos++;
+                  } else {
+                    result4 = null;
+                    if (reportFailures === 0) {
+                      matchFailed("any character");
+                    }
+                  }
+                  if (result4 !== null) {
+                    result3 = [result3, result4];
+                  } else {
+                    result3 = null;
+                    pos = pos3;
+                  }
+                } else {
+                  result3 = null;
+                  pos = pos3;
+                }
+                if (result3 !== null) {
+                  result3 = (function(offset, c) { return c;})(pos2, result3[1]);
+                }
+                if (result3 === null) {
+                  pos = pos2;
+                }
+              }
+            } else {
+              result2 = null;
+            }
+            if (result2 !== null) {
+              result3 = parse_tag_end();
+              if (result3 !== null) {
+                result0 = [result0, result1, result2, result3];
+              } else {
+                result0 = null;
+                pos = pos1;
+              }
+            } else {
+              result0 = null;
+              pos = pos1;
+            }
+          } else {
+            result0 = null;
+            pos = pos1;
+          }
+        } else {
+          result0 = null;
+          pos = pos1;
+        }
+        if (result0 !== null) {
+          result0 = (function(offset, b) { 
+              return [COMMENT, offset, b.join('')]; 
+            })(pos0, result0[2]);
         }
         if (result0 === null) {
           pos = pos0;
@@ -828,6 +1066,35 @@ require.define("/lib/parser.js",function(require,module,exports,__dirname,__file
         return result0;
       }
       
+      function parse_hat_start() {
+        var result0, result1;
+        var pos0;
+        
+        pos0 = pos;
+        result0 = parse_tag_start();
+        if (result0 !== null) {
+          if (input.charCodeAt(pos) === 94) {
+            result1 = "^";
+            pos++;
+          } else {
+            result1 = null;
+            if (reportFailures === 0) {
+              matchFailed("\"^\"");
+            }
+          }
+          if (result1 !== null) {
+            result0 = [result0, result1];
+          } else {
+            result0 = null;
+            pos = pos0;
+          }
+        } else {
+          result0 = null;
+          pos = pos0;
+        }
+        return result0;
+      }
+      
       function parse_section_start() {
         var result0, result1;
         var pos0;
@@ -886,6 +1153,64 @@ require.define("/lib/parser.js",function(require,module,exports,__dirname,__file
         return result0;
       }
       
+      function parse_esc_tag_start() {
+        var result0, result1;
+        var pos0;
+        
+        pos0 = pos;
+        result0 = parse_tag_start();
+        if (result0 !== null) {
+          if (input.charCodeAt(pos) === 123) {
+            result1 = "{";
+            pos++;
+          } else {
+            result1 = null;
+            if (reportFailures === 0) {
+              matchFailed("\"{\"");
+            }
+          }
+          if (result1 !== null) {
+            result0 = [result0, result1];
+          } else {
+            result0 = null;
+            pos = pos0;
+          }
+        } else {
+          result0 = null;
+          pos = pos0;
+        }
+        return result0;
+      }
+      
+      function parse_esc_tag_end() {
+        var result0, result1;
+        var pos0;
+        
+        pos0 = pos;
+        result0 = parse_tag_end();
+        if (result0 !== null) {
+          if (input.charCodeAt(pos) === 125) {
+            result1 = "}";
+            pos++;
+          } else {
+            result1 = null;
+            if (reportFailures === 0) {
+              matchFailed("\"}\"");
+            }
+          }
+          if (result1 !== null) {
+            result0 = [result0, result1];
+          } else {
+            result0 = null;
+            pos = pos0;
+          }
+        } else {
+          result0 = null;
+          pos = pos0;
+        }
+        return result0;
+      }
+      
       function parse_tag_start() {
         var result0;
         
@@ -922,35 +1247,35 @@ require.define("/lib/parser.js",function(require,module,exports,__dirname,__file
         
         pos0 = pos;
         pos1 = pos;
-        if (/^[a-zA-Z_$]/.test(input.charAt(pos))) {
+        if (/^[a-zA-Z_$? \t]/.test(input.charAt(pos))) {
           result0 = input.charAt(pos);
           pos++;
         } else {
           result0 = null;
           if (reportFailures === 0) {
-            matchFailed("[a-zA-Z_$]");
+            matchFailed("[a-zA-Z_$? \\t]");
           }
         }
         if (result0 !== null) {
           result1 = [];
-          if (/^[0-9a-zA-Z_$]/.test(input.charAt(pos))) {
+          if (/^[0-9a-zA-Z_$? \t]/.test(input.charAt(pos))) {
             result2 = input.charAt(pos);
             pos++;
           } else {
             result2 = null;
             if (reportFailures === 0) {
-              matchFailed("[0-9a-zA-Z_$]");
+              matchFailed("[0-9a-zA-Z_$? \\t]");
             }
           }
           while (result2 !== null) {
             result1.push(result2);
-            if (/^[0-9a-zA-Z_$]/.test(input.charAt(pos))) {
+            if (/^[0-9a-zA-Z_$? \t]/.test(input.charAt(pos))) {
               result2 = input.charAt(pos);
               pos++;
             } else {
               result2 = null;
               if (reportFailures === 0) {
-                matchFailed("[0-9a-zA-Z_$]");
+                matchFailed("[0-9a-zA-Z_$? \\t]");
               }
             }
           }
@@ -965,7 +1290,7 @@ require.define("/lib/parser.js",function(require,module,exports,__dirname,__file
           pos = pos1;
         }
         if (result0 !== null) {
-          result0 = (function(offset, h, t) { return [IDENTIFIER, offset, h + t.join('')]; })(pos0, result0[0], result0[1]);
+          result0 = (function(offset, h, t) { return (h + t.join('')).trim(); })(pos0, result0[0], result0[1]);
         }
         if (result0 === null) {
           pos = pos0;
@@ -1048,7 +1373,10 @@ require.define("/lib/parser.js",function(require,module,exports,__dirname,__file
         var IDENTIFIER = 'var';
         var BUFFER     = 'buf';
         var INCLUDE    = 'inc';
+        var NOESC      = 'esc';
         var BLOCK      = 'blk';
+        var NOT_BLOCK  = 'not';
+        var COMMENT    = 'rem';
       
       
       var result = parseFunctions[startRule]();
@@ -1155,27 +1483,6 @@ require.define("/lib/runtime.js",function(require,module,exports,__dirname,__fil
   };
 
   /*
-   * Given a ast, produce the original string
-   * text
-   */
-  function originalText(ast) {
-    var buf='';
-    for(var i=0;i<ast.length;i++) {
-      var node=ast[i];
-      if(node && node.length>=2) {
-        switch(node[0]) {
-          case 'buf': buf+=node[1]; break;
-          case 'var': buf+='{{'+node[1]+'}}'; break;
-          case 'inc': buf+='{{>'+node[1][1]+'}}'; break;
-          case 'blk': buf+='{{#'+node[1][1]+'}}'+originalText(node[2])+'{{/'+node[1][1]+'}}'; break;
-          default: console.log('*** unknown ast ' + ast); break;
-        }
-      }
-    }
-    return buf;
-  };
-
-  /*
    * Function to evaulate a context
    *  ast - [ array of ops ]
    *  - each ops
@@ -1187,7 +1494,7 @@ require.define("/lib/runtime.js",function(require,module,exports,__dirname,__fil
   function evalContext(ast, context) {
     var buf='';
     if(typeof(context)=='function') {
-      //console.log(originalText(ast));
+      //console.log(ast);
     }
     var i=0;
     var maxNodes=ast.length;
@@ -1198,30 +1505,44 @@ require.define("/lib/runtime.js",function(require,module,exports,__dirname,__fil
         //offset = node[1];
         //value = node[2];
         //console.log(type, offset, value);
+
         if(node[0]=='buf') {
           // [ 'buf', 14, '! You have ' ]
           buf += node[2];
-        } else if(node[0]=='var') {
+        } else if(node[0]=='var' || node[0]=='esc') {
+          // --- variables
           // [ 'var', 8, 'name' ]
-          buf += context[node[2]];
+          var val = context.hasOwnProperty(node[2]) ? context[node[2]]: '';          
+          buf += (node[0]=='var'?escapeHtml(val):val);
+          //buf+=val;
         } else if(node[0]=='inc') {
-           // included partial to be loaded
-           // [ 'inc', 23, [ 'var', 23, 'replace' ] ]
-           // node[2][2] is the partial name
-           buf += evalContext(_templates[node[2][2]], context);
-         } else if(node[0]=='blk') {
-           // [ 'blk', 0, [Object], [Object] ] 
-           // node[2] is the ast
-           // node[2][0] should be 'var'
-           // node[2][2] should be the context name
-           var loopContext = context[node[2][2]];
-           loopContext = loopContext && loopContext instanceof Array?loopContext:[loopContext];
-           for(var cidx=0;cidx<loopContext.length;cidx++) {
-             var ctxt = loopContext[cidx];
-             //console.log(node[2]);
-             //console.log(ctxt);
-             buf += evalContext(node[3], ctxt);
+          // ---- partials
+          // included partial to be loaded
+          // [ 'inc', 23, 'replace' ]
+          buf += evalContext(_templates[node[2]], context);
+         } else if(node[0]=='blk' || node[0]=='not') {
+           // ---- sections
+           // [ 'blk', 0, 'secname', [Object] ] 
+           // node[3] is the ast
+           // node[2] should be the section name
+           
+           // check if the context value is false or empty
+           var presence = context.hasOwnProperty(node[2]) ? context[node[2]] : false;
+           presence = presence instanceof Array ? presence.length>0 : presence;
+           if(presence && node[0]=='blk') {
+             var loopContext = context[node[2]];
+             loopContext = loopContext instanceof Array?loopContext:[loopContext];
+             for(var cidx=0;cidx<loopContext.length;cidx++) {
+               var ctxt = loopContext[cidx];
+               //console.log(node[2]);
+               //console.log(ctxt);
+               buf += evalContext(node[3], ctxt);
+             }
+           } else if(!presence && node[0]=='not') {
+             buf += evalContext(node[3], context);
            }
+         } else if(node[0]=='rem') {
+           // just ignore comments
          } else {
            console.log('*** unknown tag **** ' + node[0]);
          }
@@ -1229,6 +1550,34 @@ require.define("/lib/runtime.js",function(require,module,exports,__dirname,__fil
     }
     return buf;
   };
+
+  /* Utility functions */
+  // following copied from dust.js & underscore.js
+  // List of HTML entities for escaping.
+  var htmlEscapes = {
+    '&': '&amp;',
+    '<': '&lt;',
+    '>': '&gt;',
+    '"': '&quot;',
+    "'": '&#x27;',
+    '/': '&#x2F;'
+  };
+
+  // Regex containing the keys listed immediately above.
+  var htmlEscaper = /[&<>"'\/]/g;
+  var HTMLChars = new RegExp(htmlEscaper);
+  function escapeHtml(s) 
+  {
+    if(typeof s === 'string') {
+      if(!HTMLChars.test(s)) {
+        return s;
+      }
+      return s.replace(htmlEscaper, function(match) {
+        return htmlEscapes[match];
+      });
+    }
+    return s;
+  }
 
   return result;
 })();
