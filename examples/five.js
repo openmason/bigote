@@ -5,10 +5,10 @@ var context =
   "person?": { "name": "Jon" }
 };
 
-var tmpl = bigote.parse("{{#person?}}"
-                        + "  Hi {{name}}!"
-                        + "{{/person?}}");
+var tmpl = bigote.load("{{#person?}}"
+                       + "  Hi {{name}}!"
+                       + "{{/person?}}");
                         
 console.log(JSON.stringify(tmpl));
-var result = bigote.evaluate(tmpl, context);
+var result = bigote.render(tmpl, context);
 console.log(result);

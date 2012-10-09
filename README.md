@@ -8,6 +8,20 @@ Full support for mustache templates. Please refer to examples directory for samp
 
    * http://mustache.github.com/mustache.5.html
 
+### Load
+To compile templates
+
+    var bigote=require('bigote');
+    // load the templates
+    var compiledTemplate = bigote.load(templateString);
+
+### Render
+To render compiled template
+
+    // set the data in context and call
+    var result=bigote.render(compiledTemplate, context);
+    
+
 ## Performance
 Please refer to benchmark directory (this directory have the benchmark files from dust.js updated with bigote for comparison)
 

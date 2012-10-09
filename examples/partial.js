@@ -14,7 +14,7 @@ for(var b=0;b<n;b++) {
   var start = +new Date();
   var result;
   for(var i=0;i<loops;i++) {
-    result = bigote.evaluate(tmpl, context);
+    result = bigote.render(tmpl, context);
   }
   var end = +new Date();
   total += (end-start);

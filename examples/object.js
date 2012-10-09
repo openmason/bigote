@@ -3,8 +3,8 @@ var bigote = require('..');
 var source="{{#person}}{{name}}{{age}}{{/person}}";
 var context={ person: { name: "Larry", age: 45 } };
 
-var tmpl = bigote.parse(source);
-console.log(tmpl);
+var tmpl = bigote.load(source);
+console.log(JSON.stringify(tmpl));
 var total=0;
 var n=100;
 var loops=5000;
@@ -13,7 +13,7 @@ for(var b=0;b<n;b++) {
   var start = +new Date();
   var result;
   for(var i=0;i<loops;i++) {
-    result = bigote.evaluate(tmpl, context);
+    result = bigote.render(tmpl, context);
   }
   var end = +new Date();
   total += (end-start);

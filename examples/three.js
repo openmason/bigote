@@ -9,11 +9,11 @@ var context =
   ]
 };
 
-var tmpl = bigote.parse("{{#repo}}"
-                        + "  <b>{{name}}</b>\n"
-                        + "{{/repo}}"
-                        );
+var tmpl = bigote.load("{{#repo}}"
+                       + "  <b>{{name}}</b>\n"
+                       + "{{/repo}}"
+                      );
                         
-console.log(tmpl);
-var result = bigote.evaluate(tmpl, context);
+console.log(JSON.stringify(tmpl));
+var result = bigote.render(tmpl, context);
 console.log(result);

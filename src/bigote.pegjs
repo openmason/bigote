@@ -6,14 +6,14 @@
   var IDENTIFIER = 'var';
   var BUFFER     = 'buf';
   var INCLUDE    = 'inc';
-  var NOESC      = 'esc';
+  var NOESC      = 'val';
   var BLOCK      = 'blk';
   var NOT_BLOCK  = 'not';
   var COMMENT    = 'rem';
 }
 
 start
-  = b:body                                { return(b); }
+  = b:body                                { return {ast:b, source:input}; }
 
 body
   = part*
@@ -34,15 +34,15 @@ variable
   / comment
 
 section
-  = t:conditional v:varname tag_end
+  = t:conditional v:varname spos:tag_end
     b:body
-    section_end x:varname tag_end
+    epos:section_end x:varname tag_end
     {
       // v & v1 has to be the same
       if(v!=x) {
         console.log('section start ('+v+') and end ('+x+') does not match! at:'+offset);
       }
-      return [t, offset, v, b];
+      return [t, offset, spos+2, epos-1, v, b];
     }
 
 conditional
@@ -68,7 +68,7 @@ section_start
   = tag_start "#"
 
 section_end
-  = tag_start "/"
+  = tag_start "/"                         { return offset; }
 
 esc_tag_start
   = tag_start "{"
@@ -80,7 +80,7 @@ tag_start
   = "{{"
 
 tag_end
-  = "}}"
+  = "}}"                                  { return offset; }
 
 varname
   = h:[a-zA-Z_$? \t] t:[0-9a-zA-Z_$? \t]* { return (h + t.join('')).trim(); }

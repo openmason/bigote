@@ -57,9 +57,25 @@ var benches = {
   },
 
   complex: {
-    source:  "<h1>{{header}}</h1>",
+    source:  "<h1>{{header}}</h1>{{#hasItems}}<ul>{{#items}}{{#current}}" +
+             "<li><strong>{{name}}</strong></li>{{/current}}{{^current}}" +
+             "<li><a href=\"{{url}}\">{{name}}</a></li>{{/current}}"      +
+             "{{/items}}</ul>{{/hasItems}}{{^hasItems}}<p>The list is empty.</p>{{/hasItems}}",
     context: {
-               header: "hello"
+               header: function() {
+                 return "Colors";
+               },
+               items: [
+                 {name: "red", current: true, url: "#Red"},
+                 {name: "green", current: false, url: "#Green"},
+                 {name: "blue", current: false, url: "#Blue"}
+               ],
+               hasItems: function() {
+                 return this.items.length !== 0;
+               },
+               empty: function() {
+                 return this.items.length === 0;
+               }
              }
   }
 }
@@ -72,7 +88,7 @@ exports.bigoteBench = function(suite, name, id) {
 
   var tmpl = bigote.load(src, partials);
   suite.bench(id || name, function(next) {
-    bigote.evaluate(tmpl, ctx);
+    bigote.render(tmpl, ctx);
     next();
   });
 }

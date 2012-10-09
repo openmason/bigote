@@ -10,10 +10,10 @@ var context =
   }
 };
 
-var tmpl = bigote.parse("{{#wrapped}}"
-                        + "  {{name}} is awesome."
-                        + "{{/wrapped}}");
+var tmpl = bigote.load("{{#wrapped}}"
+                       + "  {{name}} is awesome."
+                       + "{{/wrapped}}");
                         
 console.log(JSON.stringify(tmpl));
-var result = bigote.evaluate(tmpl, context);
+var result = bigote.render(tmpl, context);
 console.log(result);

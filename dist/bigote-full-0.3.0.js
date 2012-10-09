@@ -408,18 +408,18 @@ require.define("/lib/bigote.js",function(require,module,exports,__dirname,__file
   var runtime = require('./runtime');
 
   var result = {
-    /* call the parser's parse */
-    parse: parser.parse,
     /* Load template and partials */
     load: function(tmpl, partials) {
       var _templates = {};
       _templates['main'] = parser.parse(tmpl);
-      for(var p in partials) {
-        _templates[p] = parser.parse(partials[p]);
+      if(partials) {
+        for(var p in partials) {
+          _templates[p] = parser.parse(partials[p]);
+        }
       }
       return _templates;
     },
-    evaluate: runtime.evaluate
+    render: runtime.evaluate
   };
   return result;
 })();
@@ -546,7 +546,7 @@ require.define("/lib/parser.js",function(require,module,exports,__dirname,__file
         pos0 = pos;
         result0 = parse_body();
         if (result0 !== null) {
-          result0 = (function(offset, b) { return(b); })(pos0, result0);
+          result0 = (function(offset, b) { return {ast:b, source:input}; })(pos0, result0);
         }
         if (result0 === null) {
           pos = pos0;
@@ -748,13 +748,13 @@ require.define("/lib/parser.js",function(require,module,exports,__dirname,__file
           pos = pos1;
         }
         if (result0 !== null) {
-          result0 = (function(offset, t, v, b, x) {
+          result0 = (function(offset, t, v, spos, b, epos, x) {
               // v & v1 has to be the same
               if(v!=x) {
                 console.log('section start ('+v+') and end ('+x+') does not match! at:'+offset);
               }
-              return [t, offset, v, b];
-            })(pos0, result0[0], result0[1], result0[3], result0[5]);
+              return [t, offset, spos+2, epos-1, v, b];
+            })(pos0, result0[0], result0[1], result0[2], result0[3], result0[4], result0[5]);
         }
         if (result0 === null) {
           pos = pos0;
@@ -1126,9 +1126,10 @@ require.define("/lib/parser.js",function(require,module,exports,__dirname,__file
       
       function parse_section_end() {
         var result0, result1;
-        var pos0;
+        var pos0, pos1;
         
         pos0 = pos;
+        pos1 = pos;
         result0 = parse_tag_start();
         if (result0 !== null) {
           if (input.charCodeAt(pos) === 47) {
@@ -1144,10 +1145,16 @@ require.define("/lib/parser.js",function(require,module,exports,__dirname,__file
             result0 = [result0, result1];
           } else {
             result0 = null;
-            pos = pos0;
+            pos = pos1;
           }
         } else {
           result0 = null;
+          pos = pos1;
+        }
+        if (result0 !== null) {
+          result0 = (function(offset) { return offset; })(pos0);
+        }
+        if (result0 === null) {
           pos = pos0;
         }
         return result0;
@@ -1228,7 +1235,9 @@ require.define("/lib/parser.js",function(require,module,exports,__dirname,__file
       
       function parse_tag_end() {
         var result0;
+        var pos0;
         
+        pos0 = pos;
         if (input.substr(pos, 2) === "}}") {
           result0 = "}}";
           pos += 2;
@@ -1237,6 +1246,12 @@ require.define("/lib/parser.js",function(require,module,exports,__dirname,__file
           if (reportFailures === 0) {
             matchFailed("\"}}\"");
           }
+        }
+        if (result0 !== null) {
+          result0 = (function(offset) { return offset; })(pos0);
+        }
+        if (result0 === null) {
+          pos = pos0;
         }
         return result0;
       }
@@ -1373,7 +1388,7 @@ require.define("/lib/parser.js",function(require,module,exports,__dirname,__file
         var IDENTIFIER = 'var';
         var BUFFER     = 'buf';
         var INCLUDE    = 'inc';
-        var NOESC      = 'esc';
+        var NOESC      = 'val';
         var BLOCK      = 'blk';
         var NOT_BLOCK  = 'not';
         var COMMENT    = 'rem';
@@ -1471,31 +1486,44 @@ require.define("/lib/runtime.js",function(require,module,exports,__dirname,__fil
   var _templates = {};
 
   var result = {
-    /* Execute a given JSON AST */
+    /* Execute a given JSON AST 
+     * 
+     * format would be
+     *   {'main': {'ast': ... ast ... , 'source': ... source text ... }, partials ... }
+     */
     evaluate: function (ast, context) {
-      if(!(ast && ast instanceof Array)) {
-        // for now assume it has partials
+      if(ast && ast.hasOwnProperty('main')) {
+        // get the main to start
         _templates = ast;
-        ast = _templates['main'] || ast;
+        ast = _templates['main']['ast'];
+        var source = _templates['main']['source'];
+        return evalContext(ast, context, source);
       }
-      return evalContext(ast, context);
+      return '<no starting point to run>';
     }
   };
+
+  function render(text)  {
+    if(text==this.source) {
+      return evalContext(this.ast, this.context, this.source);
+    }
+    // for now, there is no compilation on
+    // modified sources
+    return text;
+  }
 
   /*
    * Function to evaulate a context
    *  ast - [ array of ops ]
    *  - each ops
    *    - buf (data buffer)
-   *    - var (variable from context)
+   *    - var (variable from context - needs HTML escaping)
+   *    - val (variable from context - no escaping)
    *    - inc (include another template)
    *    - blk (block of template)
    */
-  function evalContext(ast, context) {
+  function evalContext(ast, context, source) {
     var buf='';
-    if(typeof(context)=='function') {
-      //console.log(ast);
-    }
     var i=0;
     var maxNodes=ast.length;
     while(maxNodes--) {
@@ -1509,7 +1537,7 @@ require.define("/lib/runtime.js",function(require,module,exports,__dirname,__fil
         if(node[0]=='buf') {
           // [ 'buf', 14, '! You have ' ]
           buf += node[2];
-        } else if(node[0]=='var' || node[0]=='esc') {
+        } else if(node[0]=='var' || node[0]=='val') {
           // --- variables
           // [ 'var', 8, 'name' ]
           var val = context.hasOwnProperty(node[2]) ? context[node[2]]: '';          
@@ -1519,27 +1547,36 @@ require.define("/lib/runtime.js",function(require,module,exports,__dirname,__fil
           // ---- partials
           // included partial to be loaded
           // [ 'inc', 23, 'replace' ]
-          buf += evalContext(_templates[node[2]], context);
+          var ast1 = _templates[node[2]]['ast'];
+          var source1 = _templates[node[2]]['source'];          
+          buf += evalContext(ast1, context, source1);
          } else if(node[0]=='blk' || node[0]=='not') {
            // ---- sections
-           // [ 'blk', 0, 'secname', [Object] ] 
-           // node[3] is the ast
-           // node[2] should be the section name
+           // [ 'blk', 0, pos1, pos2, 'secname', [Object] ] 
+           // node[5] is the ast
+           // node[4] should be the section name
            
            // check if the context value is false or empty
-           var presence = context.hasOwnProperty(node[2]) ? context[node[2]] : false;
+           var presence = context.hasOwnProperty(node[4]) ? context[node[4]] : false;
            presence = presence instanceof Array ? presence.length>0 : presence;
            if(presence && node[0]=='blk') {
-             var loopContext = context[node[2]];
+             var loopContext = context[node[4]];
              loopContext = loopContext instanceof Array?loopContext:[loopContext];
              for(var cidx=0;cidx<loopContext.length;cidx++) {
                var ctxt = loopContext[cidx];
-               //console.log(node[2]);
-               //console.log(ctxt);
-               buf += evalContext(node[3], ctxt);
+               if(typeof(ctxt)=='function') {
+                 // setup the render function
+                 this.render = render;
+                 this.context = context;
+                 this.source = source.substr(node[2], (node[3]-node[2]));
+                 this.ast = node[5];
+                 buf += ctxt()(this.source, this.render);
+               } else {
+                 buf += evalContext(node[5], ctxt, source);
+               }
              }
            } else if(!presence && node[0]=='not') {
-             buf += evalContext(node[3], context);
+             buf += evalContext(node[5], context, source);
            }
          } else if(node[0]=='rem') {
            // just ignore comments

@@ -15,7 +15,7 @@ var context= {
 var partials={ recursion: "{{name}}{{#kids}}{{>recursion}}{{/kids}}" };
 
 var tmpl = bigote.load(source, partials);
-console.log(tmpl);
+console.log(JSON.stringify(tmpl));
 var total=0;
 var n=100;
 var loops=5000;
@@ -24,7 +24,7 @@ for(var b=0;b<n;b++) {
   var start = +new Date();
   var result;
   for(var i=0;i<loops;i++) {
-    result = bigote.evaluate(tmpl, context);
+    result = bigote.render(tmpl, context);
   }
   var end = +new Date();
   total += (end-start);
