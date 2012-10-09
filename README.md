@@ -3,13 +3,11 @@ Logic-less templating
 
 Support for compiled mushtache specs that are highly performant. Please check the benchmarks to see for yourself. Still not a usable product.
 
+## Features
+Full support for mustache templates. Please refer to examples directory for samples from mustache man pages.
+
 ## Performance
-  * string example - 30k /ms
-  * replace example - 4.5k /ms
-  * array example - 2.2k /ms
-  * object example - 3.8k /ms
-  * partial example - 1k /ms
-  * recursion example - 1.7k /ms
+Have copied the benchmark code from dust.js and have added bigote for comparison. 
 
 ## Notes
   * Inspired by mushtache, dust.js

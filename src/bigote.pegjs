@@ -7,6 +7,7 @@
   var BUFFER     = 'buf';
   var INCLUDE    = 'inc';
   var BLOCK      = 'blk';
+  var NOESC      = 'esc';
 }
 
 start
@@ -25,7 +26,9 @@ tag
   / variable
 
 variable
-  = tag_start v:varname tag_end          { return v; }
+  = tag_start v:varname tag_end          { return [IDENTIFIER, offset, v]; }
+  / esc_tag_start v1:varname esc_tag_end { return [NOESC, offset, v1]; }
+  / tag_start "&" v2:varname tag_end     { return [NOESC, offset, v2]; }
 
 section
   = section_start v:varname tag_end
@@ -33,9 +36,9 @@ section
     section_end x:varname tag_end
     {
       // v & v1 has to be the same
-      //console.log(v);
-      //console.log(x);
-      //console.log(b);
+      if(v!=x) {
+        console.log('section start ('+v+') and end ('+x+') does not match! at:'+offset);
+      }
       return [BLOCK, offset, v, b];
     }
 
@@ -51,6 +54,12 @@ section_start
 section_end
   = tag_start "/"
 
+esc_tag_start
+  = tag_start "{"
+
+esc_tag_end
+  = tag_end "}"
+
 tag_start
   = "{{"
 
@@ -58,7 +67,7 @@ tag_end
   = "}}"
 
 varname
-  = h:[a-zA-Z_$] t:[0-9a-zA-Z_$]*         { return [IDENTIFIER, offset, h + t.join('')]; }
+  = h:[a-zA-Z_$?] t:[0-9a-zA-Z_$?]*         { return h + t.join(''); }
 
 EOF
   = !.

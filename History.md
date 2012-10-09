@@ -1,4 +1,5 @@
-# release 0.3.2
+# release 0.3.3
+ * added examples from mustache man page
  * offset added to AST
  * added benchmarks directory (copied from dust.js)
  * partials support added
