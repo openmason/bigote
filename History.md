@@ -1,4 +1,5 @@
-# release 0.3.5
+# release 0.3.6
+ * comparable performance for all tests against dust
  * in case of features, all the features for mustache template are in place now
  * added comment, hat to grammar
  * added examples from mustache man page

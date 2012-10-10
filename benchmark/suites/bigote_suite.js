@@ -70,12 +70,8 @@ var benches = {
                  {name: "green", current: false, url: "#Green"},
                  {name: "blue", current: false, url: "#Blue"}
                ],
-               hasItems: function() {
-                 return this.items.length !== 0;
-               },
-               empty: function() {
-                 return this.items.length === 0;
-               }
+               hasItems: true,
+               empty: false
              }
   }
 }

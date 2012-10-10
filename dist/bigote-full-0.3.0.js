@@ -1492,20 +1492,18 @@ require.define("/lib/runtime.js",function(require,module,exports,__dirname,__fil
      *   {'main': {'ast': ... ast ... , 'source': ... source text ... }, partials ... }
      */
     evaluate: function (ast, context) {
-      if(ast && ast.hasOwnProperty('main')) {
-        // get the main to start
+      if(ast) { // && ast.hasOwnProperty(entryPoint)) {
         _templates = ast;
-        ast = _templates['main']['ast'];
-        var source = _templates['main']['source'];
-        return evalContext(ast, context, source);
+        // get the main to start
+        return evalContext(ast['main']['ast'], context, 'main');
       }
-      return '<no starting point to run>';
+      return '<empty or null template>';
     }
   };
 
   function render(text)  {
     if(text==this.source) {
-      return evalContext(this.ast, this.context, this.source);
+      return evalContext(this.ast, this.context, this.module);
     }
     // for now, there is no compilation on
     // modified sources
@@ -1522,62 +1520,63 @@ require.define("/lib/runtime.js",function(require,module,exports,__dirname,__fil
    *    - inc (include another template)
    *    - blk (block of template)
    */
-  function evalContext(ast, context, source) {
+  function evalContext(ast, context, module) {
     var buf='';
-    var i=0;
-    var maxNodes=ast.length;
-    while(maxNodes--) {
-      var node = ast[i++];
+    if(!ast) return buf;
+    for(var i=0;i<ast.length;i++) {
+      var node = ast[i];
       if(node && node.length>=3) {
-        //type = node[0];
-        //offset = node[1];
-        //value = node[2];
-        //console.log(type, offset, value);
-
+        // array element with type, offset, value
         if(node[0]=='buf') {
           // [ 'buf', 14, '! You have ' ]
           buf += node[2];
-        } else if(node[0]=='var' || node[0]=='val') {
-          // --- variables
-          // [ 'var', 8, 'name' ]
-          var val = context.hasOwnProperty(node[2]) ? context[node[2]]: '';          
-          buf += (node[0]=='var'?escapeHtml(val):val);
-          //buf+=val;
+        } else if(node[0]=='var') {
+          // --- variable with escaping
+          buf+=escapeHtml(context[node[2]] || '');
         } else if(node[0]=='inc') {
           // ---- partials
           // included partial to be loaded
           // [ 'inc', 23, 'replace' ]
-          var ast1 = _templates[node[2]]['ast'];
-          var source1 = _templates[node[2]]['source'];          
-          buf += evalContext(ast1, context, source1);
+          buf += evalContext(_templates[node[2]]['ast'], context, node[2]);
          } else if(node[0]=='blk' || node[0]=='not') {
            // ---- sections
            // [ 'blk', 0, pos1, pos2, 'secname', [Object] ] 
+           // pos1 - start offset pos in the source
+           // pos2 - end offset pos in the source
            // node[5] is the ast
            // node[4] should be the section name
            
            // check if the context value is false or empty
-           var presence = context.hasOwnProperty(node[4]) ? context[node[4]] : false;
+           var section = context[node[4]];
+           var presence = section || false;
+           // check if its an array, if so, length of the array would
+           // determine context
            presence = presence instanceof Array ? presence.length>0 : presence;
+           // if presence is a function, check if the function
+           // returns true/false 
+           if(typeof(presence)=='function') {
+           }
            if(presence && node[0]=='blk') {
-             var loopContext = context[node[4]];
-             loopContext = loopContext instanceof Array?loopContext:[loopContext];
-             for(var cidx=0;cidx<loopContext.length;cidx++) {
-               var ctxt = loopContext[cidx];
+             section = section instanceof Array?section:[section];
+             for(var cidx=0;cidx<section.length;cidx++) {
+               var ctxt = section[cidx];
                if(typeof(ctxt)=='function') {
                  // setup the render function
                  this.render = render;
                  this.context = context;
-                 this.source = source.substr(node[2], (node[3]-node[2]));
+                 this.source = _templates[module]['source'].substr(node[2], (node[3]-node[2]));
                  this.ast = node[5];
                  buf += ctxt()(this.source, this.render);
                } else {
-                 buf += evalContext(node[5], ctxt, source);
+                 buf += evalContext(node[5], ctxt, module);
                }
              }
            } else if(!presence && node[0]=='not') {
-             buf += evalContext(node[5], context, source);
+             buf += evalContext(node[5], context, module);
            }
+         } else if(node[0]=='val') {
+           // --- variable with no escaping
+           buf+=(context[node[2]] || '');
          } else if(node[0]=='rem') {
            // just ignore comments
          } else {
