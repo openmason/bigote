@@ -43,8 +43,15 @@ To render template
 ## Performance
 Please refer to benchmark directory (this directory have the benchmark files from dust.js updated with bigote for comparison). For those who want to see a screen shot.
 
-![Template engine](doc/images/performance.png "Performance shootout")
+![Template engine](bigote/doc/images/performance.png "Performance shootout")
 
 ## Notes
   * Inspired by mushtache, dust.js
   * PEG.js - http://pegjs.majda.cz/
+
+## Useful Links
+Other template engines that might be of interest
+  * Hogan - https://github.com/twitter/hogan.js
+  * Dust - https://github.com/akdubya/dustjs
+  * Mu2 - https://github.com/raycmorgan/Mu
+
