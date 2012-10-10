@@ -1,7 +1,7 @@
 # bigote
-Logic-less templating
+Logic-less template engine
 
-Support for compiled mushtache specs that are highly performant. Please check the benchmarks to see for yourself, mostly beats dust.js by 10-20%. Still an alpha product, use it to toy around.
+Compiles mushtache templates to AST which are then rendered using a super slim runtime engine. Please check the benchmarks to see the performance for yourself, even beats dust.js by 10-20%. Still an alpha product, use it to toy around.
 
 ## Features
 Full support for mustache templates. Please refer to examples directory for samples from mustache man pages.
@@ -22,7 +22,7 @@ To render compiled template
     var result=bigote.render(compiledTemplate, context);
 
 ### Browser
-Include the script
+To use it on the browser side, include the script from dist directory
 
     <script src="bigote-full-0.3.0.js"></script>
 
@@ -41,7 +41,9 @@ To render template
 
 
 ## Performance
-Please refer to benchmark directory (this directory have the benchmark files from dust.js updated with bigote for comparison)
+Please refer to benchmark directory (this directory have the benchmark files from dust.js updated with bigote for comparison). For those who want to see a screen shot.
+
+![Template engine](doc/images/performance.png "Performance shootout")
 
 ## Notes
   * Inspired by mushtache, dust.js

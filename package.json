@@ -1,13 +1,13 @@
 {
   "name": "bigote",
-  "description": "Logic less templating",
+  "description": "High performance logic less template engine, supports full mustache spec",
   "homepage": "https://github.com/openmason/bigote",
   "version": "0.3.6",
   "author": "el aras <openmason@gmail.com>",
   "dependencies": {
   },
   "devDependencies": [],
-  "keywords": ["mustache", "template engine"],
+  "keywords": ["mustache", "template", "handlebars", "dust", "template engine"],
   "repository": {"type":"git", "url": "git://github.com/openmason/bigote"},
   "main": "index",
   "scripts": { "prepublish" : "npm prune" },
