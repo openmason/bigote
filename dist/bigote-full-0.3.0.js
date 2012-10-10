@@ -1492,7 +1492,7 @@ require.define("/lib/runtime.js",function(require,module,exports,__dirname,__fil
      *   {'main': {'ast': ... ast ... , 'source': ... source text ... }, partials ... }
      */
     evaluate: function (ast, context) {
-      if(ast) { // && ast.hasOwnProperty(entryPoint)) {
+      if(ast) { 
         _templates = ast;
         // get the main to start
         return evalContext(ast['main']['ast'], context, 'main');
@@ -1530,9 +1530,13 @@ require.define("/lib/runtime.js",function(require,module,exports,__dirname,__fil
         if(node[0]=='buf') {
           // [ 'buf', 14, '! You have ' ]
           buf += node[2];
-        } else if(node[0]=='var') {
+        } else if(node[0]=='var' || node[0]=='val') {
           // --- variable with escaping
-          buf+=escapeHtml(context[node[2]] || '');
+          var tmp = context[node[2]] || '';
+          if(typeof(tmp)=='function') {
+            tmp=context[node[2]]();
+          }
+          buf+=(node[0]=='var'?escapeHtml(tmp):tmp);
         } else if(node[0]=='inc') {
           // ---- partials
           // included partial to be loaded
@@ -1555,6 +1559,7 @@ require.define("/lib/runtime.js",function(require,module,exports,__dirname,__fil
            // if presence is a function, check if the function
            // returns true/false 
            if(typeof(presence)=='function') {
+             presence=section=context[node[4]]();
            }
            if(presence && node[0]=='blk') {
              section = section instanceof Array?section:[section];
@@ -1566,17 +1571,14 @@ require.define("/lib/runtime.js",function(require,module,exports,__dirname,__fil
                  this.context = context;
                  this.source = _templates[module]['source'].substr(node[2], (node[3]-node[2]));
                  this.ast = node[5];
-                 buf += ctxt()(this.source, this.render);
+                 buf += ctxt(this.source, this.render);
                } else {
-                 buf += evalContext(node[5], ctxt, module);
+                 buf += evalContext(node[5], typeof(ctxt)=='boolean'?context:ctxt, module);
                }
              }
-           } else if(!presence && node[0]=='not') {
+           } else if(node[0]=='not' && !presence) {
              buf += evalContext(node[5], context, module);
            }
-         } else if(node[0]=='val') {
-           // --- variable with no escaping
-           buf+=(context[node[2]] || '');
          } else if(node[0]=='rem') {
            // just ignore comments
          } else {
