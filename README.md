@@ -43,7 +43,7 @@ To render template
 ## Performance
 Please refer to benchmark directory (this directory have the benchmark files from dust.js updated with bigote for comparison). For those who want to see a screen shot.
 
-![Template engine](bigote/doc/images/performance.png "Performance shootout")
+![Template engine](bigote/tree/master/doc/images/performance.png "Performance shootout")
 
 ## Notes
   * Inspired by mushtache, dust.js
