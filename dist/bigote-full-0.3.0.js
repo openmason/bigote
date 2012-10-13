@@ -1501,13 +1501,12 @@ require.define("/lib/runtime.js",function(require,module,exports,__dirname,__fil
     }
   };
 
+  // for now, there is no compilation on
+  // modified sources
+  // -- assumed that the text was the block
+  //    that was forwarded to function
   function render(text)  {
-    if(text==this.source) {
-      return evalContext(this.ast, this.context, this.module);
-    }
-    // for now, there is no compilation on
-    // modified sources
-    return text;
+    return evalContext(this.ast, this.context, this.module);
   }
 
   /*
@@ -1602,12 +1601,11 @@ require.define("/lib/runtime.js",function(require,module,exports,__dirname,__fil
   };
 
   // Regex containing the keys listed immediately above.
-  var htmlEscaper = /[&<>"'\/]/g;
-  var HTMLChars = new RegExp(htmlEscaper);
+  var htmlEscaper = /[&<>"'\/]/mg;
   function escapeHtml(s) 
   {
     if(typeof s === 'string') {
-      if(!HTMLChars.test(s)) {
+      if(!htmlEscaper.test(s)) {
         return s;
       }
       return s.replace(htmlEscaper, function(match) {

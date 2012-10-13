@@ -50,6 +50,12 @@ Please refer to benchmark directory (this directory have the benchmark files fro
 
 ![Template engine](https://raw.github.com/openmason/bigote/master/doc/images/performance.png "Performance shootout")
 
+## Tests
+To run all the unit tests 
+
+    // runs all the mocha tests, just issue
+    make
+
 ## Notes
   * Inspired by mushtache, dust.js
   * PEG.js - http://pegjs.majda.cz/

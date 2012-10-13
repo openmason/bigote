@@ -1,5 +1,7 @@
 # Upcoming releases
 - Add full unit test for each mushtache feature
+- Add code to push browser dist file
+- minify the dist file
 - generate js code instead of using runtime
 - Have jsperf link for shootout with other mustache engines (hogan, mustache, mu2 etc.,)
 - add command line tool to pass json/xml/yaml and template to produce the output

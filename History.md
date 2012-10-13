@@ -1,4 +1,5 @@
-# release 0.3.7
+# release 0.3.8
+ * fixed issue with regular expression handling
  * comparable performance for most of the tests against dust (except filter/complex)
  * all the features for mustache template are in place now
  * added comment, hat to grammar
