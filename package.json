@@ -6,10 +6,16 @@
   "author": "el aras <openmason@gmail.com>",
   "dependencies": {
   },
-  "devDependencies": [],
-  "keywords": ["mustache", "template", "handlebars", "dust", "template engine"],
+  "devDependencies": {
+    "mocha"            : ">= 1.6.0",
+    "should"           : ">= 1.2.0"
+  },
+  "keywords": ["mustache", "template", "handlebars", "dust", "hogan", "template engine"],
   "repository": {"type":"git", "url": "git://github.com/openmason/bigote"},
   "main": "index",
-  "scripts": { "prepublish" : "npm prune" },
+  "scripts": {
+    "test"      : "make",
+    "prepublish": "npm prune"
+   },
   "engines": { "node":">= 0.6.6" }
 }
