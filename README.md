@@ -7,6 +7,11 @@ Compiles mushtache templates to AST which are then rendered using a super slim r
 Full support for mustache templates. Please refer to examples directory for samples from mustache man pages.
 
    * http://mustache.github.com/mustache.5.html
+   * Features
+     * Comments
+
+### Todo
+   * Set delimiter - not yet supported (only default delimiters supported)
 
 ### Load
 To compile templates
