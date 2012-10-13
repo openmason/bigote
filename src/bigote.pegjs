@@ -83,7 +83,13 @@ tag_end
   = "}}"                                  { return offset; }
 
 varname
-  = h:[a-zA-Z_$? \t] t:[0-9a-zA-Z_$? \t]* { return (h + t.join('')).trim(); }
+  = ws* h:[a-zA-Z_$?\.] t:[0-9a-zA-Z_$?\.]* ws*  
+  { 
+    return (h + t.join('')).trim(); 
+  }
+
+ws
+  = [\t\v\f \u00A0\uFEFF]
 
 EOF
   = !.

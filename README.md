@@ -8,6 +8,7 @@ Full support for mustache templates. Please refer to examples directory for samp
 
    * http://mustache.github.com/mustache.5.html
    * Features
+     * Variables - presence, absence (empty string), html escaping
      * Comments
 
 ### Todo
@@ -49,6 +50,7 @@ To render template
 Please refer to benchmark directory (this directory have the benchmark files from dust.js updated with bigote for comparison). For those who want to see a screen shot.
 
 ![Template engine](https://raw.github.com/openmason/bigote/master/doc/images/performance.png "Performance shootout")
+
 
 ## Tests
 To run all the unit tests 

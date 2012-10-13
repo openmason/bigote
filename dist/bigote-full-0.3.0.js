@@ -483,6 +483,7 @@ require.define("/lib/parser.js",function(require,module,exports,__dirname,__file
         "tag_start": parse_tag_start,
         "tag_end": parse_tag_end,
         "varname": parse_varname,
+        "ws": parse_ws,
         "EOF": parse_EOF
       };
       
@@ -1257,45 +1258,67 @@ require.define("/lib/parser.js",function(require,module,exports,__dirname,__file
       }
       
       function parse_varname() {
-        var result0, result1, result2;
+        var result0, result1, result2, result3, result4;
         var pos0, pos1;
         
         pos0 = pos;
         pos1 = pos;
-        if (/^[a-zA-Z_$? \t]/.test(input.charAt(pos))) {
-          result0 = input.charAt(pos);
-          pos++;
-        } else {
-          result0 = null;
-          if (reportFailures === 0) {
-            matchFailed("[a-zA-Z_$? \\t]");
-          }
+        result0 = [];
+        result1 = parse_ws();
+        while (result1 !== null) {
+          result0.push(result1);
+          result1 = parse_ws();
         }
         if (result0 !== null) {
-          result1 = [];
-          if (/^[0-9a-zA-Z_$? \t]/.test(input.charAt(pos))) {
-            result2 = input.charAt(pos);
+          if (/^[a-zA-Z_$?.]/.test(input.charAt(pos))) {
+            result1 = input.charAt(pos);
             pos++;
           } else {
-            result2 = null;
+            result1 = null;
             if (reportFailures === 0) {
-              matchFailed("[0-9a-zA-Z_$? \\t]");
-            }
-          }
-          while (result2 !== null) {
-            result1.push(result2);
-            if (/^[0-9a-zA-Z_$? \t]/.test(input.charAt(pos))) {
-              result2 = input.charAt(pos);
-              pos++;
-            } else {
-              result2 = null;
-              if (reportFailures === 0) {
-                matchFailed("[0-9a-zA-Z_$? \\t]");
-              }
+              matchFailed("[a-zA-Z_$?.]");
             }
           }
           if (result1 !== null) {
-            result0 = [result0, result1];
+            result2 = [];
+            if (/^[0-9a-zA-Z_$?.]/.test(input.charAt(pos))) {
+              result3 = input.charAt(pos);
+              pos++;
+            } else {
+              result3 = null;
+              if (reportFailures === 0) {
+                matchFailed("[0-9a-zA-Z_$?.]");
+              }
+            }
+            while (result3 !== null) {
+              result2.push(result3);
+              if (/^[0-9a-zA-Z_$?.]/.test(input.charAt(pos))) {
+                result3 = input.charAt(pos);
+                pos++;
+              } else {
+                result3 = null;
+                if (reportFailures === 0) {
+                  matchFailed("[0-9a-zA-Z_$?.]");
+                }
+              }
+            }
+            if (result2 !== null) {
+              result3 = [];
+              result4 = parse_ws();
+              while (result4 !== null) {
+                result3.push(result4);
+                result4 = parse_ws();
+              }
+              if (result3 !== null) {
+                result0 = [result0, result1, result2, result3];
+              } else {
+                result0 = null;
+                pos = pos1;
+              }
+            } else {
+              result0 = null;
+              pos = pos1;
+            }
           } else {
             result0 = null;
             pos = pos1;
@@ -1305,10 +1328,27 @@ require.define("/lib/parser.js",function(require,module,exports,__dirname,__file
           pos = pos1;
         }
         if (result0 !== null) {
-          result0 = (function(offset, h, t) { return (h + t.join('')).trim(); })(pos0, result0[0], result0[1]);
+          result0 = (function(offset, h, t) { 
+            return (h + t.join('')).trim(); 
+          })(pos0, result0[1], result0[2]);
         }
         if (result0 === null) {
           pos = pos0;
+        }
+        return result0;
+      }
+      
+      function parse_ws() {
+        var result0;
+        
+        if (/^[\t\x0B\f \xA0\uFEFF]/.test(input.charAt(pos))) {
+          result0 = input.charAt(pos);
+          pos++;
+        } else {
+          result0 = null;
+          if (reportFailures === 0) {
+            matchFailed("[\\t\\x0B\\f \\xA0\\uFEFF]");
+          }
         }
         return result0;
       }
@@ -1522,7 +1562,7 @@ require.define("/lib/runtime.js",function(require,module,exports,__dirname,__fil
   function evalContext(ast, context, module) {
     var buf='';
     if(!ast) return buf;
-    for(var i=0;i<ast.length;i++) {
+    for(var i=0,astlen=ast.length;i<astlen;i++) {
       var node = ast[i];
       if(node && node.length>=3) {
         // array element with type, offset, value
@@ -1530,8 +1570,19 @@ require.define("/lib/runtime.js",function(require,module,exports,__dirname,__fil
           // [ 'buf', 14, '! You have ' ]
           buf += node[2];
         } else if(node[0]=='var' || node[0]=='val') {
-          // --- variable with escaping
-          var tmp = context[node[2]] || '';
+          // --- loop and find out associative elements
+          var tmp;
+          if(node[2].indexOf('.')==-1) {
+            tmp=context[node[2]];
+          } else {
+            var kpath = node[2].split('.');
+            tmp=context;
+            for(var kidx=0;kidx<kpath.length;kidx++) {
+              tmp=(kpath[kidx]==''?tmp:tmp[kpath[kidx]]);
+              if(!tmp) break;
+            }
+          }
+          tmp = tmp || '';
           if(typeof(tmp)=='function') {
             tmp=context[node[2]]();
           }
@@ -1595,13 +1646,11 @@ require.define("/lib/runtime.js",function(require,module,exports,__dirname,__fil
     '&': '&amp;',
     '<': '&lt;',
     '>': '&gt;',
-    '"': '&quot;',
-    "'": '&#x27;',
-    '/': '&#x2F;'
+    '"': '&quot;'
   };
 
   // Regex containing the keys listed immediately above.
-  var htmlEscaper = /[&<>"'\/]/mg;
+  var htmlEscaper = /[&<>"]/mg;
   function escapeHtml(s) 
   {
     if(typeof s === 'string') {

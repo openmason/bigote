@@ -9,6 +9,8 @@
 - front end site for 
   - documentation
   - playing with the template engine 
+- checkout jsperf on mustache engines http://jsperf.com/mushtache-engine-shootout
+- what if '.' points to an object ?? what should be the output
 
 # goal
 - parity with mushtache engine
