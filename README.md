@@ -63,7 +63,6 @@ To run all the unit tests
   * PEG.js - http://pegjs.majda.cz/
 
 ## Useful Links
-Other template engines that might be of interest
   * Hogan - https://github.com/twitter/hogan.js
   * Dust - https://github.com/akdubya/dustjs
   * Mu2 - https://github.com/raycmorgan/Mu

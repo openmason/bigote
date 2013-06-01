@@ -11,6 +11,7 @@
   - playing with the template engine 
 - checkout jsperf on mustache engines http://jsperf.com/mushtache-engine-shootout
 - what if '.' points to an object ?? what should be the output
+- function and variable context - if function, available at top level to be supported
 
 # goal
 - parity with mushtache engine
