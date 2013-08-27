@@ -38,7 +38,7 @@ section
     b:body
     epos:section_end x:varname tag_end
     {
-      // v & v1 has to be the same
+      // v & x has to be the same
       if(v!=x) {
         console.log('section start ('+v+') and end ('+x+') does not match! at:'+offset);
       }
