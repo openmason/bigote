@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/openmason/bigote.png?branch=master)](https://travis-ci.org/openmason/bigote)
+
 # bigote
 Logic-less template engine
 
