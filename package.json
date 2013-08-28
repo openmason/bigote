@@ -2,7 +2,7 @@
   "name": "bigote",
   "description": "High performance logic less template engine, supports full mustache spec",
   "homepage": "https://github.com/openmason/bigote",
-  "version": "0.3.10",
+  "version": "0.3.11",
   "author": "el aras <openmason@gmail.com>",
   "dependencies": {
   },
@@ -17,5 +17,5 @@
     "test"      : "make",
     "prepublish": "npm prune"
    },
-  "engines": { "node":">= 0.6.6" }
+  "engines": { "node":">= 0.8.0" }
 }

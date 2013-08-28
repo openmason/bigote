@@ -1,0 +1,42 @@
+#!/usr/bin/env node
+/**
+ * bigote - copyright(c) 2013 openmason.
+ * MIT Licensed
+ * 
+ *  - command line utility to convert mushtache templates
+ */
+
+var optimist = require('optimist');
+var bigote = require('..');
+var handy = require('handy');
+var fs = require('fs');
+
+// bigote -i inpfile -d datafile
+//
+var _versionString = 'bigote v'+handy.getVersion();
+var argv = optimist
+  .usage(_versionString + '\nRun mushtache template engine.')
+  .options({
+    inpfile : {
+      demand : true,
+      alias : 'i',
+      description : 'Input mushtache template file'
+    },
+    datafile : {
+      demand : true,
+      alias : 'd',
+      description : 'Input data file'
+    }
+  })
+  .argv;
+
+// load the context (data file)
+var context=JSON.parse(fs.readFileSync(argv.datafile, 'utf-8'));
+
+// compile the template and render it
+var tmpl = bigote.load(fs.readFileSync(argv.inpfile, 'utf-8'));
+
+//@todo: Need to write to the output file
+console.log(bigote.render(tmpl, context));
+
+// -- EOF
