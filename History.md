@@ -1,4 +1,4 @@
-# release 0.3.11
+# release 0.3.12
  * introduced a bin script to run bigote from command line
  * [0.3.10] toying with performance of AST converted to JS, still not on par with AST
  * fixed issue with regular expression handling
